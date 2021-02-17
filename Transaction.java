@@ -170,13 +170,9 @@ public class Transaction {
       return hash;
    }
 
-   public ArrayList<Input> getInputs() {
-      return inputs;
-   }
+   public ArrayList<Input> getInputs() { return inputs; }
 
-   public ArrayList<Output> getOutputs() {
-      return outputs;
-   }
+   public ArrayList<Output> getOutputs() { return outputs; }
 
    public Input getInput(int index) {
       if (index < inputs.size()) {
