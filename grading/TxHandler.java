@@ -5,6 +5,7 @@ public class TxHandler {
 	 */
 	public TxHandler(UTXOPool utxoPool) {
 		// IMPLEMENT THIS
+		return new UTXOPool(UTXOPool uPool);
 	}
 
 	/* Returns true if 
