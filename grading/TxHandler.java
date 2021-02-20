@@ -18,24 +18,39 @@ public class TxHandler {
 	   and false otherwise.
 	 */
 
-	public boolean isValidTx(Transaction tx) {
-		// IMPLEMENT THIS
-		int totalInput = 0, totalOutput = 0;
-		for (int i = 0; i<tx.numOutputs(); i++) {
-			if (tx.getOutput(i).value < 0){
-				return false;
-			} else {
-				totalOutput+=tx.getOutput(i).value;
-			}
-		}
+    public boolean isValidTx(Transaction tx) {
+        // IMPLEMENT THIS
+        int totalInput = 0, totalOutput = 0;
+        //(4) all of tx’s output values are non-negative
+        for (int i = 0; i<tx.numOutputs(); i++) {
+            if (tx.getOutput(i).value < 0){
+                return false;
+            } else {
+                totalOutput+=tx.getOutput(i).value;
+            }
+        }
 
-		for (int i = 0; i<tx.numInputs(); i++) {
-			System.out.println(tx.getInput(i).outputIndex);
-			//int x = tx.getInput(i).outputIndex;
-			//totalInput += tx.getOutput(x).value;
-		}
-		return false;
-	}
+        for (int i = 0; i<tx.numInputs(); i++) {
+            System.out.println(tx.getInput(i).outputIndex);
+            
+            int x = tx.getInput(i).outputIndex;
+            byte[] prevHash = x.prevHash;
+            
+            UTXO utxo = new UTXO(prevHash, x);
+        //(1) all outputs claimed by tx are in the current UTXO pool
+            if(!utxopool.contains(utxo)) {
+                return false;
+            }
+            //totalInput += tx.getOutput(x).value;
+        }
+        
+        //(5) the sum of tx’s input values is greater than or equal to the sum of
+        //its output values;
+        if (totalInput < totalOutput) {
+            return false;
+        }
+        return true;
+    }
 	/* Handles each epoch by receiving an unordered array of proposed 
 	 * transactions, checking each transaction for correctness, 
 	 * returning a mutually valid array of accepted transactions, 
