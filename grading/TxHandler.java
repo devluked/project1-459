@@ -1,11 +1,13 @@
+import java.util.*;
 public class TxHandler {
 	/* Creates a public ledger whose current UTXOPool (collection of unspent 
 	 * transaction outputs) is utxoPool. This should make a defensive copy of 
 	 * utxoPool by using the UTXOPool(UTXOPool uPool) constructor.
 	 */
+    private UTXOPool utxoPool;
 	public TxHandler(UTXOPool utxoPool) {
 		// IMPLEMENT THIS
-		return new UTXOPool(UTXOPool uPool);
+		this.utxoPool = new UTXOPool(utxoPool);
 	}
 
 	/* Returns true if 
@@ -20,28 +22,37 @@ public class TxHandler {
 
     public boolean isValidTx(Transaction tx) {
         // IMPLEMENT THIS
-        int totalInput = 0, totalOutput = 0;
+        double totalInput = 0.0, totalOutput = 0.0;
+        ArrayList<UTXO> pool = new ArrayList<>();
+        for (int i = 0; i<tx.numInputs(); i++) {
+            Transaction.Input x = tx.getInput(i);
+            UTXO utxo = new UTXO(x.prevTxHash, x.outputIndex);
+            //(1) all outputs claimed by tx are in the current UTXO pool
+            if(!utxoPool.contains(utxo)) {
+                return false;
+            }
+            //(2) the signatures on each input of tx are valid
+            Transaction.Output y = utxoPool.getTxOutput(utxo);
+            if(!y.address.verifySignature(tx.getRawDataToSign(i), x.signature)) {
+                return false;
+            }
+            //(3) no UTXO is claimed multiple times by tx
+            if (pool.contains(utxo)) {
+                return false;
+            }
+            pool.add(utxo);
+            totalInput += y.value;
+            //totalInput += tx.getOutput(x).value;
+        }
+        
         //(4) all of tx’s output values are non-negative
         for (int i = 0; i<tx.numOutputs(); i++) {
-            if (tx.getOutput(i).value < 0){
+            Transaction.Output y = tx.getOutput(i);
+            if (y.value < 0){
                 return false;
             } else {
-                totalOutput+=tx.getOutput(i).value;
+                totalOutput+=y.value;
             }
-        }
-
-        for (int i = 0; i<tx.numInputs(); i++) {
-            System.out.println(tx.getInput(i).outputIndex);
-            
-            int x = tx.getInput(i).outputIndex;
-            byte[] prevHash = x.prevHash;
-            
-            UTXO utxo = new UTXO(prevHash, x);
-        //(1) all outputs claimed by tx are in the current UTXO pool
-            if(!utxopool.contains(utxo)) {
-                return false;
-            }
-            //totalInput += tx.getOutput(x).value;
         }
         
         //(5) the sum of tx’s input values is greater than or equal to the sum of
