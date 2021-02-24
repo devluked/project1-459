@@ -68,8 +68,30 @@ public class TxHandler {
 	 * and updating the current UTXO pool as appropriate.
 	 */
 	public Transaction[] handleTxs(Transaction[] possibleTxs) {
-		// IMPLEMENT THIS
-		return null;
-	}
+	    // IMPLEMENT THIS
+	    ArrayList<Transaction> currValidTxs = new ArrayList<>();
+	    ArrayList<Transaction> txsContainer = new ArrayList(Arrays.asList(possibleTxs));
+
+	    for (int i=0; i < txsContainer.size(); i++) {
+	        if (isValidTx(txsContainer.get(i))) {
+	            currValidTxs.add(txsContainer.get(i));
+
+                for (int j = 0; j < txsContainer.get(i).getInputs().size(); j++) {
+                    UTXO tempUTXO = new UTXO(txsContainer.get(i).getInput(j).prevTxHash, txsContainer.get(i).getInput(j).outputIndex);
+                    utxoPool.removeUTXO(tempUTXO);
+                }
+                for (int j = 0; j < txsContainer.get(i).getOutputs().size(); j++) {
+                    UTXO tempUTXO = new UTXO(txsContainer.get(i).getHash(), j);
+                    utxoPool.addUTXO(tempUTXO, txsContainer.get(i).getOutput(j));
+                }
+            }
+	    }
+
+	    Transaction[] finValidTxs = new Transaction[currValidTxs.size()];
+	    for (int i = 0; i < currValidTxs.size(); i++)
+	        finValidTxs[i] = currValidTxs.get(i);
+
+	    return finValidTxs;
+    }
 
 } 
